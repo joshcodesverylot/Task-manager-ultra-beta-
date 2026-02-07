@@ -1,4 +1,5 @@
 import json
+import ai_helper as ai
 tasks = []
 priority_map = {
     "H": 1,
@@ -17,6 +18,7 @@ class Task:
         self.title = title
         self.completed = completed
         self.priority = priority
+        self.category = None
     
     def change_title(self, title):
         self.title = title
@@ -62,6 +64,7 @@ def load_from_file():
         
         to_list(data)
         print("Loading file back")
+        return tasks
     except FileNotFoundError:
         print("No Saves Found")
         return []
@@ -100,7 +103,8 @@ def search_task(keyword):
 def add_task(title):
     temp_task = Task(title)
     tasks.append(temp_task)
-    print("Task:", temp_task.title, "added!")
+    temp_task.category = ai.categorize_tasks(title)
+    print("Task:", temp_task.title, "added! Urgency:", temp_task.category)
 
 
 #Edits the task
@@ -151,7 +155,7 @@ def delete_task(index):
     try:
         removed = tasks.pop(index)
         print(f"Deleting {removed.title}")
-        view_tasks()
+        view_tasks(tasks)
     except IndexError:
         print("Error: That task Number does not exist")
 
