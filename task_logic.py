@@ -10,8 +10,9 @@ priority_map = {
 
 
 
-#ERRORS
-# 
+#NEXT
+# want to improve UI and create a better purpose for the ai implementation
+# change_completed logic here
 
 class Task:
     def __init__(self, title, completed=False, priority="U"):
@@ -32,25 +33,41 @@ class Task:
     def to_dict(self):
         return {
             "title": self.title,
-            "priority": self.priority
+            "category": self.category,
+            "status": self.completed
         }
 
 
+
+def update_task_title(index, new_title):
+    if 0 <= index < len(tasks):
+        tasks[index].change_title(new_title)
+        save_to_file()
+        print(f"Updated task {index} title to: {new_title}")
+
+def update_task_category(index, new_category):
+    if 0 <= index < len(tasks):
+        tasks[index].category = new_category
+        save_to_file()
+        print(f"Updated task {index} category to: {new_category}")
+
 #Converts dictionary to list
 def to_list(data):
-    temp_title = None
-    temp_priority = None
-    temp_completed = None
-    temp_task = None
+    tasks.clear()
     for task in data:
-        for index , (key, item) in enumerate(task.items()):
-            if key == "title":
-                temp_title = item
-            elif key == "completed":
-                temp_completed = item
-            elif key == "priority":
-                temp_priority = item
-        temp_task = Task(temp_title, temp_completed, temp_priority)
+        temp_title = task.get("title", "No Title")
+
+        raw_status = task.get("status", False)
+
+        if raw_status == "☑":
+            is_completed = True
+        elif raw_status == "☐":
+            is_completed = False
+        else:
+            is_completed = bool(raw_status)
+        
+        temp_task = Task(temp_title, is_completed)
+        temp_task.category = task.get("category")
         tasks.append(temp_task)
 
 
@@ -105,6 +122,7 @@ def add_task(title):
     tasks.append(temp_task)
     temp_task.category = ai.categorize_tasks(title)
     print("Task:", temp_task.title, "added! Urgency:", temp_task.category)
+    return temp_task.category
 
 
 #Edits the task
@@ -155,9 +173,12 @@ def delete_task(index):
     try:
         removed = tasks.pop(index)
         print(f"Deleting {removed.title}")
+        save_to_file()
         view_tasks(tasks)
+        return True
     except IndexError:
         print("Error: That task Number does not exist")
+        return False
 
 def main():
     print("Welcome back Joshua")
